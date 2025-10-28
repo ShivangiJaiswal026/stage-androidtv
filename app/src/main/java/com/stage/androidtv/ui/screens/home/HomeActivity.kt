@@ -7,32 +7,24 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
 import com.stage.androidtv.data.model.MovieItem
 import com.stage.androidtv.ui.screens.player.VideoPlayerActivity
 import com.stage.androidtv.ui.theme.AndroidtvTheme
+import com.stage.androidtv.viewmodel.MovieState
+import com.stage.androidtv.viewmodel.MovieViewModel
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,28 +41,25 @@ class HomeActivity : ComponentActivity() {
 }
 
 @Composable
-private fun HomeScreen(modifier: Modifier = Modifier) {
-    Text(text = "Home", modifier = modifier)
+fun HomeScreen(modifier: Modifier = Modifier, viewModel: MovieViewModel = viewModel()) {
+    val state by viewModel.state.collectAsState()
+
+    when (state) {
+        is MovieState.Loading -> Text("Loading...", modifier.padding(16.dp))
+        is MovieState.Error -> Text((state as MovieState.Error).message, modifier.padding(16.dp))
+        is MovieState.Success -> MovieListScreen((state as MovieState.Success).movies)
+    }
 }
 
 @Composable
-fun MovieListScreen() {
+fun MovieListScreen(movies: List<MovieItem>) {
     val context = LocalContext.current
-    val movies = remember {
-        listOf(
-            MovieItem(
-                "1",
-                "Interstellar",
-                "A space odyssey",
-                "https://picsum.photos/600/400",
-                "https://samplelib.com/lib/preview/mp4/sample-5s.mp4"
-            ),
-            MovieItem("2", "Inception", "A mind-bending thriller", "https://picsum.photos/601/400", "https://samplelib.com/lib/preview/mp4/sample-10s.mp4")
-        )
-    }
 
     Surface(modifier = Modifier.fillMaxSize()) {
-        LazyVerticalGrid(columns = GridCells.Fixed(3), contentPadding = PaddingValues(24.dp)) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            contentPadding = PaddingValues(24.dp)
+        ) {
             items(movies) { movie ->
                 MovieTile(movie) {
                     val intent = Intent(context, VideoPlayerActivity::class.java)
@@ -89,22 +78,23 @@ fun MovieTile(movie: MovieItem, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .padding(12.dp)
-            .width(250.dp)
-            .height(140.dp)
+            .width(120.dp)
+            .height(380.dp)
             .onFocusChanged { focused = it.isFocused }
             .focusable(true),
         colors = CardDefaults.cardColors(
-            containerColor = if (focused) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+            containerColor = if (focused)
+                MaterialTheme.colorScheme.primaryContainer
+            else
+                MaterialTheme.colorScheme.surface
         ),
         onClick = onClick
     ) {
         Image(
-            painter = rememberAsyncImagePainter(movie.thumbnailUrl),
+            painter = rememberAsyncImagePainter(movie.posterUrl),
             contentDescription = movie.title,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
     }
 }
-
-

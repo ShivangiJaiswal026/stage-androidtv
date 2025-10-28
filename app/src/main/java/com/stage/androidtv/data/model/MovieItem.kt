@@ -4,6 +4,6 @@ data class MovieItem(
     val id: String,
     val title: String,
     val description: String,
-    val thumbnailUrl: String,
+    val posterUrl: String,
     val videoUrl: String
 )

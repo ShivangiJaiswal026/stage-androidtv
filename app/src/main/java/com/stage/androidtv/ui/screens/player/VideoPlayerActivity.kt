@@ -13,6 +13,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
@@ -24,35 +25,35 @@ class VideoPlayerActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         window.decorView.systemUiVisibility = (
-            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-            View.SYSTEM_UI_FLAG_FULLSCREEN
-        )
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN
+                )
+
+        val videoUrl = intent.getStringExtra("videoUrl")
 
         setContent {
-            FullscreenContainer()
+            if (videoUrl != null) {
+                FullscreenContainer(videoUrl)
+            }
         }
     }
 }
 
 @Composable
-private fun FullscreenContainer() {
+private fun FullscreenContainer(videoUrl: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-    ){
-        val videoUrl = intent.getStringExtra("videoUrl")
-
-        if (videoUrl != null) {
-            PlayerScreen(videoUrl)
-        }
+    ) {
+        PlayerScreen(videoUrl)
     }
 }
 
 @Composable
 fun PlayerScreen(videoUrl: String) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     val player = remember {
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(videoUrl))
@@ -65,12 +66,15 @@ fun PlayerScreen(videoUrl: String) {
         onDispose { player.release() }
     }
 
-    AndroidView(factory = {
-        PlayerView(it).apply {
-            useController = true
-            this.player = player
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = {
+            PlayerView(it).apply {
+                useController = true
+                this.player = player
+            }
         }
-    })
+    )
 }
 
 
