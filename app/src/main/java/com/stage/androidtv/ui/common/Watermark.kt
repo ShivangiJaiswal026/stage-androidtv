@@ -13,19 +13,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.stage.androidtv.R
 
-private const val DEFAULT_WATERMARK_DESC = "Watermark"
-private val DEFAULT_WATERMARK_PADDING = PaddingValues(16.dp)
-
-private val WATERMARK_RES_ID = R.drawable.watermark
-
 @Composable
 fun Watermark(
     modifier: Modifier = Modifier,
     alignment: Alignment = Alignment.TopEnd,
-    padding: PaddingValues = DEFAULT_WATERMARK_PADDING,
+    padding: PaddingValues = PaddingValues(16.dp),
     sizeDp: Int = 100,
-    contentDescription: String = DEFAULT_WATERMARK_DESC,
-    resId: Int = WATERMARK_RES_ID
+    contentDescription: String = "Watermark",
+    resId: Int = R.drawable.watermark
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -38,5 +33,3 @@ fun Watermark(
         )
     }
 }
-
-

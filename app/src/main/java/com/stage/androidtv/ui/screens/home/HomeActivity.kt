@@ -86,7 +86,10 @@ fun HomeScreen(viewModel: MoviesViewModel = viewModel()) {
 
     Box(Modifier.fillMaxSize()) {
         when (state) {
-            is MovieState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            is MovieState.Loading -> Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
 
@@ -142,7 +145,12 @@ fun MovieListScreen(movies: List<MovieItem>) {
                         text = movie.description,
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.8f),
-                        modifier = Modifier.padding(start = 28.dp, end = 254.dp, top = 8.dp, bottom = 8.dp)
+                        modifier = Modifier.padding(
+                            start = 28.dp,
+                            end = 254.dp,
+                            top = 8.dp,
+                            bottom = 8.dp
+                        )
                     )
                     Text(
                         text = "${movie.genre} | ${movie.year}",
@@ -230,8 +238,7 @@ fun MovieTile(
     var isFocused by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (isFocused) 1.1f else 1f,
-        animationSpec = tween(150, easing = LinearOutSlowInEasing),
-        label = "tileScale"
+        animationSpec = tween(150, easing = LinearOutSlowInEasing)
     )
 
     Card(

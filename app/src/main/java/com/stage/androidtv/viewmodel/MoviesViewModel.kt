@@ -24,14 +24,11 @@ private const val SOMETHING_WENT_WRONG = "Something went wrong."
 class MoviesViewModel(
     private val repository: MoviesRepository? = null
 ) : ViewModel() {
-
     private val repo by lazy {
-
         repository ?: MoviesRepository(
             RetrofitClient.api,
             ApplicationDatabase.getInstance(ServiceLocator.appContext).movieDao()
         )
-
     }
 
     private val _state = MutableStateFlow<MovieState>(MovieState.Loading)

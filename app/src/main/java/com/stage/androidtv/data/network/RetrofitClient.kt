@@ -9,8 +9,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
+    //url to get sample data from my other github repo
     private const val BASE_URL =
-        "https://raw.githubusercontent.com/ShivangiJaiswal026/sample-movies-api/refs/heads/main/" //sample data from my other github repo
+        "https://raw.githubusercontent.com/ShivangiJaiswal026/sample-movies-api/refs/heads/main/"
 
     private val okHttpClient: OkHttpClient by lazy {
         val context = ServiceLocator.appContext

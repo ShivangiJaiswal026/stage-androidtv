@@ -33,7 +33,7 @@ class VideoPlayerActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { // for fullscreen
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { //for fullscreen
             window.setFlags(
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
