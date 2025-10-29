@@ -1,26 +1,31 @@
 package com.stage.androidtv.data.repository
 
-import com.stage.androidtv.data.local.MovieDao
+import android.util.Log
+import com.stage.androidtv.data.local.MoviesDao
 import com.stage.androidtv.data.local.MovieEntity
 import com.stage.androidtv.data.model.MovieItem
-import com.stage.androidtv.data.remote.MovieApiService
+import com.stage.androidtv.data.remote.MoviesApiService
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class MovieRepository(
-    private val api: MovieApiService,
-    private val movieDao: MovieDao,
+private const val GET_MOVIES = "GET_MOVIES"
+private const val UNKNOWN_ERROR = "UNKNOWN_ERROR"
+
+class MoviesRepository(
+    private val api: MoviesApiService,
+    private val moviesDao: MoviesDao,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
     suspend fun getMovies(): List<MovieItem> = withContext(ioDispatcher) {
         try {
             val remote = api.getMovies()
             val entities = remote.map { it.toEntity() }
-            movieDao.insertAll(entities)
+            moviesDao.insertAll(entities)
             remote
         } catch (e: Exception) {
-            val cached = movieDao.getAllMovies()
+            Log.e(GET_MOVIES, e.message ?: UNKNOWN_ERROR)
+            val cached = moviesDao.getAllMovies()
             if (cached.isNotEmpty()) cached.map { it.toDomain() } else emptyList()
         }
     }

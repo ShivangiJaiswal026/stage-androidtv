@@ -1,6 +1,6 @@
 package com.stage.androidtv.data.model
 
-data class MovieItem(
+data class MovieItem( //for network
     val id: String,
     val title: String,
     val description: String,

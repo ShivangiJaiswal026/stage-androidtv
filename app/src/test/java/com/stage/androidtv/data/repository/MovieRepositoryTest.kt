@@ -1,21 +1,21 @@
 package com.stage.androidtv.data.repository
 
-import com.stage.androidtv.data.local.MovieDao
+import com.stage.androidtv.data.local.MoviesDao
 import com.stage.androidtv.data.local.MovieEntity
 import com.stage.androidtv.data.model.MovieItem
-import com.stage.androidtv.data.remote.MovieApiService
+import com.stage.androidtv.data.remote.MoviesApiService
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-private class FakeMovieApiService(private val result: Result<List<MovieItem>>) : MovieApiService {
+private class FakeMoviesApiService(private val result: Result<List<MovieItem>>) : MoviesApiService {
     override suspend fun getMovies(): List<MovieItem> {
         return result.getOrThrow()
     }
 }
 
-private class FakeMovieDao : MovieDao {
+private class FakeMoviesDao : MoviesDao {
     private val storage = mutableListOf<MovieEntity>()
 
     override suspend fun getAllMovies(): List<MovieEntity> = storage.toList()
@@ -31,36 +31,45 @@ private class FakeMovieDao : MovieDao {
 
 class MovieRepositoryTest {
     @Test
-    fun `returns remote data and caches to dao`() = runTest {
-        // Given: a successful API and an empty DAO
+    fun `fetch movies success response returns remote data and caches to dao`() = runTest {
+        //given
         val remoteMovies = listOf(MovieItem("1", "A", "d", "2020", "g", "p", "v"))
-        val api = FakeMovieApiService(Result.success(remoteMovies))
-        val dao = FakeMovieDao()
-        val repo = MovieRepository(api = api, movieDao = dao, ioDispatcher = StandardTestDispatcher(testScheduler))
-
-        // When: fetching movies
+        val api = FakeMoviesApiService(Result.success(remoteMovies))
+        val dao = FakeMoviesDao()
+        val repo = MoviesRepository(
+            api = api,
+            moviesDao = dao,
+            ioDispatcher = StandardTestDispatcher(testScheduler)
+        )
+        //when
         val result = repo.getMovies()
 
-        // Then: returns remote data and caches it to DAO
+        //then
         assertEquals(remoteMovies, result)
         assertEquals(1, dao.getAllMovies().size)
     }
 
     @Test
-    fun `falls back to dao when api fails`() = runTest {
-        // Given: a failing API and a DAO with cached data
-        val dao = FakeMovieDao().apply {
+    fun `fetch movies error response falls back to dao when api fails`() = runTest {
+        //given
+        val dao = FakeMoviesDao().apply {
             insertAll(listOf(MovieEntity("2", "B", "d2", "2021", "g2", "p2", "v2")))
         }
-        val failingApi = object : MovieApiService {
-            override suspend fun getMovies(): List<MovieItem> { throw RuntimeException("network error") }
+        val failingApi = object : MoviesApiService {
+            override suspend fun getMovies(): List<MovieItem> {
+                throw RuntimeException("network  error")
+            }
         }
-        val repo = MovieRepository(api = failingApi, movieDao = dao, ioDispatcher = StandardTestDispatcher(testScheduler))
+        val repo = MoviesRepository(
+            api = failingApi,
+            moviesDao = dao,
+            ioDispatcher = StandardTestDispatcher(testScheduler)
+        )
 
-        // When: fetching movies
+        //when
         val result = repo.getMovies()
 
-        // Then: returns cached data from DAO
+        //then
         assertEquals(1, result.size)
         assertEquals("2", result.first().id)
     }

@@ -3,7 +3,7 @@ package com.stage.androidtv.data.remote
 import com.stage.androidtv.data.model.MovieItem
 import retrofit2.http.GET
 
-interface MovieApiService {
+interface MoviesApiService {
     @GET("samplemovies.json")
     suspend fun getMovies(): List<MovieItem>
 }

@@ -3,7 +3,7 @@ package com.stage.androidtv.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "movies")
+@Entity(tableName = "movies") //for local
 data class MovieEntity(
     @PrimaryKey val id: String,
     val title: String,

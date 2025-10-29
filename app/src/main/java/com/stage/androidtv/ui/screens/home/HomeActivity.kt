@@ -55,13 +55,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.stage.androidtv.data.model.MovieItem
+import com.stage.androidtv.ui.common.Watermark
 import com.stage.androidtv.ui.screens.player.VideoPlayerActivity
-import com.stage.androidtv.ui.theme.AndroidtvTheme
+import com.stage.androidtv.ui.theme.AndroidTVTheme
 import com.stage.androidtv.viewmodel.MovieState
-import com.stage.androidtv.viewmodel.MovieViewModel
+import com.stage.androidtv.viewmodel.MoviesViewModel
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +71,7 @@ class HomeActivity : ComponentActivity() {
         ServiceLocator.init(applicationContext)
         enableEdgeToEdge()
         setContent {
-            AndroidtvTheme {
+            AndroidTVTheme {
                 Surface(Modifier.fillMaxSize()) {
                     HomeScreen()
                 }
@@ -79,34 +81,37 @@ class HomeActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen(viewModel: MovieViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun HomeScreen(viewModel: MoviesViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
 
-    when (state) {
-        is MovieState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+    Box(Modifier.fillMaxSize()) {
+        when (state) {
+            is MovieState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+
+            is MovieState.Error -> Text(
+                text = (state as MovieState.Error).message,
+                modifier = Modifier.padding(24.dp)
+            )
+
+            is MovieState.Success -> {
+                val movies = (state as MovieState.Success).movies
+                MovieListScreen(movies)
+            }
         }
 
-        is MovieState.Error -> Text(
-            text = (state as MovieState.Error).message,
-            modifier = Modifier.padding(24.dp)
-        )
-
-        is MovieState.Success -> {
-            val movies = (state as MovieState.Success).movies
-            MovieListWithSidePanel(movies)
-        }
+        Watermark(alignment = Alignment.TopEnd)
     }
 }
 
 @Composable
-fun MovieListWithSidePanel(movies: List<MovieItem>) {
+fun MovieListScreen(movies: List<MovieItem>) {
     val context = LocalContext.current
     var selectedMovie by remember { mutableStateOf(movies.firstOrNull()) }
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     Box(Modifier.fillMaxSize()) {
-        // Dimmed background image of selected movie
         selectedMovie?.let {
             Image(
                 painter = rememberAsyncImagePainter(it.posterUrl),
@@ -130,19 +135,20 @@ fun MovieListWithSidePanel(movies: List<MovieItem>) {
                     Text(
                         text = movie.title,
                         style = MaterialTheme.typography.headlineLarge,
-                        color = Color.White
+                        color = Color.White,
+                        modifier = Modifier.padding(start = 28.dp, end = 154.dp)
                     )
                     Text(
                         text = movie.description,
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.8f),
-                        modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
+                        modifier = Modifier.padding(start = 28.dp, end = 254.dp, top = 8.dp, bottom = 8.dp)
                     )
                     Text(
                         text = "${movie.genre} | ${movie.year}",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.7f),
-                        maxLines = 1,
+                        modifier = Modifier.padding(start = 28.dp, end = 254.dp, top = 8.dp),
                         overflow = TextOverflow.Ellipsis
                     )
                 }

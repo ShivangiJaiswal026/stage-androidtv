@@ -1,10 +1,10 @@
 package com.stage.androidtv.viewmodel
 
-import com.stage.androidtv.data.local.MovieDao
+import com.stage.androidtv.data.local.MoviesDao
 import com.stage.androidtv.data.local.MovieEntity
 import com.stage.androidtv.data.model.MovieItem
-import com.stage.androidtv.data.remote.MovieApiService
-import com.stage.androidtv.data.repository.MovieRepository
+import com.stage.androidtv.data.remote.MoviesApiService
+import com.stage.androidtv.data.repository.MoviesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -13,10 +13,12 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-private class FakeDaoVM : MovieDao {
+private class FakeDaoVM : MoviesDao {
     private val storage = mutableListOf<MovieEntity>()
     override suspend fun getAllMovies(): List<MovieEntity> = storage.toList()
-    override suspend fun insertAll(movies: List<MovieEntity>) { storage.clear(); storage.addAll(movies) }
+    override suspend fun insertAll(movies: List<MovieEntity>) {
+        storage.clear(); storage.addAll(movies)
+    }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -35,15 +37,18 @@ class MovieViewModelTest {
     }
 
     @Test
-    fun `emits Success when repository returns movies`() = runTest {
-        val movies = listOf(MovieItem("10", "Title", "Desc", "2022", "Genre", "Poster", "Video"))
-        val repo = MovieRepository(
-            api = object : MovieApiService { override suspend fun getMovies() = movies },
-            movieDao = FakeDaoVM(),
+    fun `fetch emits success when repository returns movies`() = runTest {
+        val movies =
+            listOf(MovieItem("10", "Title", "Description", "2022", "Genre", "Poster", "Video"))
+        val repo = MoviesRepository(
+            api = object : MoviesApiService {
+                override suspend fun getMovies() = movies
+            },
+            moviesDao = FakeDaoVM(),
             ioDispatcher = testDispatcher
         )
 
-        val vm = MovieViewModel(repository = repo)
+        val vm = MoviesViewModel(repository = repo)
 
         advanceUntilIdle()
 
