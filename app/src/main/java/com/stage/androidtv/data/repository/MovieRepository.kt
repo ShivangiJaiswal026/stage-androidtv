@@ -1,22 +1,19 @@
 package com.stage.androidtv.data.repository
 
-import com.stage.androidtv.core.ServiceLocator
-import com.stage.androidtv.data.local.AppDatabase
+import com.stage.androidtv.data.local.MovieDao
 import com.stage.androidtv.data.local.MovieEntity
 import com.stage.androidtv.data.model.MovieItem
 import com.stage.androidtv.data.remote.MovieApiService
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class MovieRepository(
-    private val api: MovieApiService
+    private val api: MovieApiService,
+    private val movieDao: MovieDao,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
-
-    private val movieDao by lazy {
-        AppDatabase.getInstance(ServiceLocator.appContext).movieDao()
-    }
-
-    suspend fun getMovies(): List<MovieItem> = withContext(Dispatchers.IO) {
+    suspend fun getMovies(): List<MovieItem> = withContext(ioDispatcher) {
         try {
             val remote = api.getMovies()
             val entities = remote.map { it.toEntity() }
