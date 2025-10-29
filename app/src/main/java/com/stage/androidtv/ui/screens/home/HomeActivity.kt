@@ -10,7 +10,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,7 +38,6 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -52,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,8 +61,6 @@ import com.stage.androidtv.ui.screens.player.VideoPlayerActivity
 import com.stage.androidtv.ui.theme.AndroidtvTheme
 import com.stage.androidtv.viewmodel.MovieState
 import com.stage.androidtv.viewmodel.MovieViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -242,8 +238,15 @@ fun MovieTile(
                 isFocused = it.isFocused
                 if (isFocused) onFocus()
             }
-            .focusable()
-            .clickable(enabled = isFocused) { onPlay() },
+            .onKeyEvent { keyEvent ->
+                if (keyEvent.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_DPAD_CENTER &&
+                    keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_UP
+                ) {
+                    onPlay()
+                    true
+                } else false
+            }
+            .focusable(),
         border = if (isFocused) BorderStroke(2.dp, Color.White.copy(alpha = 0.9f)) else null,
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(if (isFocused) 10.dp else 2.dp)
