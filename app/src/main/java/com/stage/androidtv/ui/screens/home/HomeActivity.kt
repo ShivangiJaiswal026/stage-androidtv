@@ -55,9 +55,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.stage.androidtv.data.model.MovieItem
+import com.stage.androidtv.ui.common.Watermark
 import com.stage.androidtv.ui.screens.player.VideoPlayerActivity
 import com.stage.androidtv.ui.theme.AndroidtvTheme
 import com.stage.androidtv.viewmodel.MovieState
@@ -79,23 +81,27 @@ class HomeActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen(viewModel: MovieViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun HomeScreen(viewModel: MovieViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
 
-    when (state) {
-        is MovieState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+    Box(Modifier.fillMaxSize()) {
+        when (state) {
+            is MovieState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+
+            is MovieState.Error -> Text(
+                text = (state as MovieState.Error).message,
+                modifier = Modifier.padding(24.dp)
+            )
+
+            is MovieState.Success -> {
+                val movies = (state as MovieState.Success).movies
+                MovieListWithSidePanel(movies)
+            }
         }
 
-        is MovieState.Error -> Text(
-            text = (state as MovieState.Error).message,
-            modifier = Modifier.padding(24.dp)
-        )
-
-        is MovieState.Success -> {
-            val movies = (state as MovieState.Success).movies
-            MovieListWithSidePanel(movies)
-        }
+        Watermark(alignment = Alignment.TopEnd)
     }
 }
 
@@ -130,19 +136,20 @@ fun MovieListWithSidePanel(movies: List<MovieItem>) {
                     Text(
                         text = movie.title,
                         style = MaterialTheme.typography.headlineLarge,
-                        color = Color.White
+                        color = Color.White,
+                        modifier = Modifier.padding(start = 28.dp, end = 154.dp)
                     )
                     Text(
                         text = movie.description,
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.8f),
-                        modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
+                        modifier = Modifier.padding(start = 28.dp, end = 254.dp, top = 8.dp, bottom = 8.dp)
                     )
                     Text(
                         text = "${movie.genre} | ${movie.year}",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.7f),
-                        maxLines = 1,
+                        modifier = Modifier.padding(start = 28.dp, end = 254.dp, top = 8.dp),
                         overflow = TextOverflow.Ellipsis
                     )
                 }
