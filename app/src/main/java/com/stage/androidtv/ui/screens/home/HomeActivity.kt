@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -42,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -113,6 +115,9 @@ fun MovieListScreen(movies: List<MovieItem>) {
     val context = LocalContext.current
     var selectedMovie by remember { mutableStateOf(movies.firstOrNull()) }
     var selectedIndex by remember { mutableIntStateOf(0) }
+    var focusedItemIndex by remember { mutableIntStateOf(0) }
+    val gridState = rememberLazyGridState()
+    val columns = 4
 
     Box(Modifier.fillMaxSize()) {
         selectedMovie?.let {
@@ -132,6 +137,7 @@ fun MovieListScreen(movies: List<MovieItem>) {
             Column(
                 Modifier
                     .weight(1f)
+                    .fillMaxSize()
                     .padding(24.dp)
             ) {
                 selectedMovie?.let { movie ->
@@ -163,15 +169,28 @@ fun MovieListScreen(movies: List<MovieItem>) {
 
                 Spacer(modifier = Modifier.height(32.dp))
 
+                LaunchedEffect(focusedItemIndex) {
+                    if (focusedItemIndex >= 0 && focusedItemIndex < movies.size) {
+                        gridState.animateScrollToItem(focusedItemIndex)
+                    }
+                }
+
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(4),
-                    contentPadding = PaddingValues(8.dp)
+                    columns = GridCells.Fixed(columns),
+                    state = gridState,
+                    contentPadding = PaddingValues(
+                        start = 8.dp,
+                        end = 8.dp,
+                        top = 8.dp,
+                        bottom = 24.dp
+                    )
                 ) {
                     items(movies.size) { index ->
                         val movie = movies[index]
                         MovieTile(
                             movie = movie,
                             onFocus = {
+                                focusedItemIndex = index
                                 if (selectedMovie?.id != movie.id) {
                                     selectedMovie = movie
                                 }
