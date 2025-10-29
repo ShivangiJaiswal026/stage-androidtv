@@ -24,8 +24,10 @@ Designed to demonstrate clean architecture, responsive layouts, and seamless vie
 ---
 
 ## 🚀 How to Run
-1. Clone this repository:
+Clone this repository:
    git clone https://github.com/<your-username>/stage-androidtv.git
+
+
 Open the project in Android Studio (Flamingo or newer).
 
 Choose an Android TV Emulator or physical TV device.
