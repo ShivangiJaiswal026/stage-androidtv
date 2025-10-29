@@ -1,4 +1,4 @@
-package com.stage.androidtv.data.network
+package com.stage.androidtv.data.remote
 
 import com.stage.androidtv.data.model.MovieItem
 import retrofit2.http.GET
