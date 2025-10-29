@@ -9,7 +9,7 @@ Designed to demonstrate clean architecture, responsive layouts, and seamless vie
 - **Kotlin** – primary language
 - **Jetpack Compose** – declarative UI
 - **MVVM** – clean architecture pattern
-- **Retrofit + MockWebServer** – for mock API handling
+- **Retrofit** – for API handling
 - **ExoPlayer** – for smooth video playback
 - **Coroutines + ViewModel** – for lifecycle-safe async loading
 
@@ -19,7 +19,6 @@ Designed to demonstrate clean architecture, responsive layouts, and seamless vie
 - Movie grid with thumbnails and focus support
 - Detail screen with movie info and Play option
 - ExoPlayer-powered playback with seek and pause
-- Mock API integration (via JSON or MockWebServer)
 - Optimized for Android TV navigation
 
 ---
@@ -35,8 +34,6 @@ Build and run the app.
 
 🧩 Testing
 Includes unit tests for ViewModel and Repository layers
-
-Uses MockWebServer to simulate API responses
 
 UI tests check basic navigation and playback
 
