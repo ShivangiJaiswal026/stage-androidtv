@@ -5,13 +5,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.stage.androidtv.core.ServiceLocator
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,19 +40,20 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -60,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import com.stage.androidtv.core.ServiceLocator
 import com.stage.androidtv.data.model.MovieItem
 import com.stage.androidtv.ui.common.Watermark
 import com.stage.androidtv.ui.screens.player.VideoPlayerActivity
@@ -187,8 +189,9 @@ fun MovieListScreen(movies: List<MovieItem>) {
                 ) {
                     items(movies.size) { index ->
                         val movie = movies[index]
-                        MovieTile(
+                        MovieTileItem(
                             movie = movie,
+                            isFocused = focusedItemIndex == index,
                             onFocus = {
                                 focusedItemIndex = index
                                 if (selectedMovie?.id != movie.id) {
@@ -249,42 +252,25 @@ fun SideNavigationRail(selected: Int, onSelect: (Int) -> Unit) {
 }
 
 @Composable
-fun MovieTile(
-    movie: MovieItem,
-    onFocus: () -> Unit,
-    onPlay: () -> Unit
-) {
-    var isFocused by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (isFocused) 1.1f else 1f,
-        animationSpec = tween(150, easing = LinearOutSlowInEasing)
-    )
-
-    Card(
-        modifier = Modifier
+fun MovieTileItem(movie: MovieItem, isFocused: Boolean, onFocus: () -> Unit, onPlay: () -> Unit) {
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect (isFocused) { if (isFocused) focusRequester.requestFocus() }
+    val scale by animateFloatAsState(if (isFocused) 1.1f else 1f, tween(150))
+    Card (modifier =
+        Modifier
             .padding(8.dp)
             .size(150.dp, 250.dp)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .onFocusChanged {
-                isFocused = it.isFocused
-                if (isFocused) onFocus()
-            }
-            .onKeyEvent { keyEvent ->
-                if (keyEvent.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_DPAD_CENTER &&
-                    keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_UP
-                ) {
-                    onPlay()
-                    true
-                } else false
-            }
-            .focusable(),
-        border = if (isFocused) BorderStroke(2.dp, Color.White.copy(alpha = 0.9f)) else null,
+            .focusRequester(focusRequester)
+            .onFocusChanged { if (it.isFocused) onFocus() }
+            .focusable()
+            .graphicsLayer(scaleX = scale, scaleY = scale)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { if (isFocused) onPlay() else onFocus() },
+        border = if (isFocused) BorderStroke(2.dp, Color.White) else null,
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(if (isFocused) 10.dp else 2.dp)
-    ) {
+        elevation = CardDefaults.cardElevation(if (isFocused) 10.dp else 2.dp)) {
         AsyncImage(
             model = movie.posterUrl,
             contentDescription = movie.title,
